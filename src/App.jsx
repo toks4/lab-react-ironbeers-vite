@@ -1,32 +1,67 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
+import { useEffect, useState } from 'react'
 import './App.css'
+import Home from './pages/Home'
+import AllBeers from './pages/AllBeers'
+import NewBeer from './pages/NewBeer'
+import RandomBeers from './pages/RandomBeers'
+import { Routes, Route } from 'react-router-dom'
+import axios from 'axios'
+import BeerDetails from './pages/BeerDetails'
+
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [beers, setBeers] = useState([])
+
+  const fetchData = async () => {
+    const response = await axios.get('https://ih-beers-api2.herokuapp.com/beers')
+    //console.log("response", response)
+    setBeers(response.data)
+  }
+  
+  
+  useEffect (()=>{
+    fetchData()
+  }, [])
+
+
+  useEffect (()=>{
+    console.log("beers when beers state changes", beers)
+  }, [beers])
+
+  const [search, setSearch] = useState("")
+
+  const handleSearch = (event)=>{
+    setSearch(event.target.value)
+    console.log("search: ", search)
+
+  }
+
+
+  const fetchSearchData = async () => {
+    const response = await axios.get(`https://ih-beers-api2.herokuapp.com/beers/search?q=${search}`)
+    console.log("search response", response.data)
+    setBeers(response.data)
+  }
+
+  useEffect (()=>{
+    fetchSearchData()
+  }, [search])
+
+
+
 
   return (
     <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      
+      <Routes>
+        <Route path="/" element={<Home/>}/>
+        <Route path="/beers" element={<AllBeers beers={beers} handleSearch={handleSearch}/>}/>
+        <Route path='beers/:id' element={<BeerDetails beers={beers}/>}/>
+        <Route path="/new-beer" element={<NewBeer/>}/>
+        <Route path="/random-beer" element={<RandomBeers/>}/>
+
+      </Routes>
     </div>
   )
 }
